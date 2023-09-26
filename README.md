@@ -8,10 +8,10 @@
 
 ## Запуск через Docker
 
-Соберите приложение командой `docker build . -t app`. Теперь запускайте:
+Соберите приложение командой `docker build . -t flibusta-search`. Теперь запускайте:
 
 ```shell
-docker run -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 app
+docker run -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 flibusta-search
 ```
 
 Приложение станет доступно на вашем [localhost'е](http://localhost/) через браузер. Если вы еще не знакомы с Docker, то быстро удалить приложение и весь кеш можно будет командой `docker system prune -fa`.
