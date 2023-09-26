@@ -1,17 +1,17 @@
-# Application
+# flibusta-search
 
-This is a template for a complete web application consisting of [frontend](frontend) and [backend](backend) components.
+Поиск на Флибусте по автору и фразе.
 
-## Build 
+## Предпосылки
 
-Execute `docker build . -t app`. Your image will be located at `docker images -a`. Now you can
-run:
+Иногда мне бывает интересно, как развивалась некая тема в произведениях определенного автора, и появляется желание выцепить все его книги, этот аспект затрагивающие. Так родилась идея искать с указанием автора и нужных фраз. Подобым инструментом является сервис Google Книги, однако, зачастую он не знает про многие произведения, которые есть на Флибусте, или знает, но не находит, или находит нерелевантные вещи. 
+
+## Запуск через Docker
+
+Соберите приложение командой `docker build . -t app`. Теперь запускайте:
 
 ```shell
 docker run -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 app
 ```
 
-Web application will available at your [localhost](http://localhost/).
-
-
-
+Приложение станет доступно на вашем [localhost'е](http://localhost/) через браузер. Если вы еще не знакомы с Docker, то быстро удалить приложение и весь кеш можно будет командой `docker system prune -fa`.
