@@ -16,7 +16,7 @@
 docker run -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 ghcr.io/demidko/flibusta-search
 ```
 
-или так
+или так, если предыдущий вариант не работает
 
 ```shell
 docker run --platform linux/amd64 -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 ghcr.io/demidko/flibusta-search
