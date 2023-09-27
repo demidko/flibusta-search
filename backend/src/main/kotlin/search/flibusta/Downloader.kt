@@ -4,7 +4,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.URI
 
-class CachedDownloader {
+class Downloader {
 
   private val cacheDirectory = File("cache")
 

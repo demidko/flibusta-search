@@ -1,6 +1,6 @@
 package search.flibusta.dto
 
-data class Suggestion(val possibleAuthors: Set<String>) : Search {
+data class Suggest(val authors: Set<String>) : Search {
 
   override val containsQuotes = false
 }

@@ -1,15 +1,15 @@
 package search.flibusta
 
-import com.google.common.collect.Collections2.permutations
 import org.apache.commons.csv.CSVFormat.newFormat
 import org.apache.commons.csv.CSVRecord
 import org.slf4j.LoggerFactory.getLogger
-import search.flibusta.utils.FlibustaBook
+import search.flibusta.dto.FlibustaBook
+import search.flibusta.utils.NameUtils.possibleNames
 import java.net.URL
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
 
-class Catalog(private val url: URL, private val downloader: CachedDownloader) {
+class Catalog(private val url: URL) {
 
   private companion object {
     const val LAST_NAME = "Last Name"
@@ -89,37 +89,17 @@ class Catalog(private val url: URL, private val downloader: CachedDownloader) {
     return listOf(firstName, lastName, middleName).filter(String::isNotBlank).joinToString(" ")
   }
 
-  fun searchBooksQuotes(author: String, query: String): Map<String, Set<String>> {
-    val words = query.split(' ').filter(String::isNotBlank)
-    val result = mutableMapOf<String, MutableSet<String>>()
-    for (authorName in possibleNames(author)) {
-      val collection = authorsToBooks.get()[authorName] ?: continue
-      for ((bookId, bookName) in collection) {
-        val quotes = searchQuotes(bookId, words)
-        if (quotes.isNotEmpty()) {
-          val previousQuotes = result.getOrPut(bookName, ::mutableSetOf)
-          previousQuotes.addAll(quotes)
-        }
+  fun bibliography(author: String): Set<FlibustaBook> {
+    val catalog = authorsToBooks.get()
+    return buildSet {
+      for (name in possibleNames(author)) {
+        val bibliography = catalog[name] ?: continue
+        addAll(bibliography)
       }
     }
-    return result
   }
 
-  private fun possibleNames(author: String): Set<String> {
-    return author.split(" ")
-      .filter(String::isNotBlank)
-      .let(::permutations)
-      .map { it.joinToString(" ") }
-      .toSet()
-  }
-
-  fun similarAuthorsNames(author: String): Set<String> {
-    // проходим по списку существующих авторов и вычисляем расстояние, топ 10 минимальных возвращаем
-    TODO()
-  }
-
-  private fun searchQuotes(bookId: Long, words: List<String>): List<String> {
-    // ищем слова в конкретной книге
-    TODO()
+  fun listAuthors(): Set<String> {
+    return authorsToBooks.get().keys
   }
 }
