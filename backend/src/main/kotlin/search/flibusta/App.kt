@@ -13,10 +13,15 @@ import java.util.concurrent.TimeUnit.MINUTES
 class App {
 
   @Bean
+  fun cachedDownloader(): CachedDownloader {
+    return CachedDownloader()
+  }
+
+  @Bean
   fun catalog(): Catalog {
     val uri = URI("https://flibusta.is/catalog/catalog.zip")
     val url = uri.toURL()
-    return Catalog(url)
+    return Catalog(url, cachedDownloader())
   }
 
   @Scheduled(fixedDelay = 15, timeUnit = MINUTES)

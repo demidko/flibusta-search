@@ -26,5 +26,6 @@ docker run -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 ghcr.io/demidko/flibusta-
 docker run --platform linux/amd64 -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 ghcr.io/demidko/flibusta-search:main
 ```
 
-Приложение станет доступно на вашем [localhost'е](http://localhost) через браузер. Если вы еще не знакомы с Docker, то
-быстро удалить приложение и весь кеш можно будет командой `docker system prune -fa`.
+Приложение станет доступно на вашем [localhost'е](http://localhost) через браузер. Кеш приложения будет находиться в
+директории `./cache`. Если вы еще не знакомы с Docker, то быстро удалить приложение можно будет
+командой `docker system prune -fa`. Папку с кешем нужно будет удалить вручную.

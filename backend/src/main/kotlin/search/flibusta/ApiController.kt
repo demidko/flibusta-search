@@ -16,11 +16,10 @@ import search.flibusta.dto.Suggestion
 class ApiController(private val catalog: Catalog) {
 
   @GetMapping("/search")
-  fun search(@NotBlank author: String, @NotBlank words: String): Search {
-    val wordsList = words.split(" ")
-    val booksToQuotes = catalog.searchBooksQuotes(author, wordsList)
+  fun search(@NotBlank author: String, @NotBlank query: String): Search {
+    val booksToQuotes = catalog.searchBooksQuotes(author, query)
     if (booksToQuotes.isEmpty()) {
-      val possibleAuthors = catalog.similarAuthors(author)
+      val possibleAuthors = catalog.similarAuthorsNames(author)
       return Suggestion(possibleAuthors)
     }
     return Result(booksToQuotes)

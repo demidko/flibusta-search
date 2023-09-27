@@ -10,5 +10,6 @@ class BooksCatalogTest {
     val uri = URI("https://flibusta.is/catalog/catalog.zip")
     val url = uri.toURL()
     val catalog = Catalog(url)
+    TODO()
   }
 }

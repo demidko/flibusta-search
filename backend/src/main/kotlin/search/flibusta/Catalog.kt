@@ -1,5 +1,6 @@
 package search.flibusta
 
+import com.google.common.collect.Collections2.permutations
 import org.apache.commons.csv.CSVFormat.newFormat
 import org.apache.commons.csv.CSVRecord
 import org.slf4j.LoggerFactory.getLogger
@@ -8,7 +9,7 @@ import java.net.URL
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
 
-class Catalog(private val url: URL) {
+class Catalog(private val url: URL, private val downloader: CachedDownloader) {
 
   private companion object {
     const val LAST_NAME = "Last Name"
@@ -63,7 +64,6 @@ class Catalog(private val url: URL) {
     log.info("Catalog successfully updated.")
   }
 
-
   private fun parseBook(record: CSVRecord): FlibustaBook {
     val title = record.get(TITLE)
     val subtitle = record.get(SUBTITLE)
@@ -89,14 +89,15 @@ class Catalog(private val url: URL) {
     return listOf(firstName, lastName, middleName).filter(String::isNotBlank).joinToString(" ")
   }
 
-  fun searchBooksQuotes(author: String, words: List<String>): Map<String, Set<String>> {
+  fun searchBooksQuotes(author: String, query: String): Map<String, Set<String>> {
+    val words = query.split(' ').filter(String::isNotBlank)
     val result = mutableMapOf<String, MutableSet<String>>()
-    for (name in possibleNames(author)) {
-      val collection = authorsToBooks.get()[name] ?: continue
-      for (book in collection) {
-        val quotes = searchQuotes(book.id, words)
-        if(quotes.isNotEmpty()) {
-          val previousQuotes = result.getOrPut(book.name, ::mutableSetOf)
+    for (authorName in possibleNames(author)) {
+      val collection = authorsToBooks.get()[authorName] ?: continue
+      for ((bookId, bookName) in collection) {
+        val quotes = searchQuotes(bookId, words)
+        if (quotes.isNotEmpty()) {
+          val previousQuotes = result.getOrPut(bookName, ::mutableSetOf)
           previousQuotes.addAll(quotes)
         }
       }
@@ -105,11 +106,14 @@ class Catalog(private val url: URL) {
   }
 
   private fun possibleNames(author: String): Set<String> {
-    // все возможные перестановки частей имени
-    TODO()
+    return author.split(" ")
+      .filter(String::isNotBlank)
+      .let(::permutations)
+      .map { it.joinToString(" ") }
+      .toSet()
   }
 
-  fun similarAuthors(author: String): List<String> {
+  fun similarAuthorsNames(author: String): Set<String> {
     // проходим по списку существующих авторов и вычисляем расстояние, топ 10 минимальных возвращаем
     TODO()
   }
