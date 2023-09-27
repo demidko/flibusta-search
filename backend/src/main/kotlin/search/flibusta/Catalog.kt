@@ -30,12 +30,13 @@ class Catalog(private val url: URL) {
 
   private val authorsToBooks = AtomicReference<Map<String, Set<FlibustaBook>>>()
 
+  private val log = getLogger(javaClass)
+
   init {
     updateCatalog()
   }
 
   fun updateCatalog() {
-    val log = getLogger(javaClass)
     val authorsToBooksUpdate = mutableMapOf<String, MutableSet<FlibustaBook>>()
     log.info("Catalog update...")
     val urlStream = url.openStream()
@@ -88,15 +89,33 @@ class Catalog(private val url: URL) {
     return listOf(firstName, lastName, middleName).filter(String::isNotBlank).joinToString(" ")
   }
 
-  fun searchBooksQuotes(author: String, words: List<String>): Map<String, List<String>> {
+  fun searchBooksQuotes(author: String, words: List<String>): Map<String, Set<String>> {
+    val result = mutableMapOf<String, MutableSet<String>>()
+    for (name in possibleNames(author)) {
+      val collection = authorsToBooks.get()[name] ?: continue
+      for (book in collection) {
+        val quotes = searchQuotes(book.id, words)
+        if(quotes.isNotEmpty()) {
+          val previousQuotes = result.getOrPut(book.name, ::mutableSetOf)
+          previousQuotes.addAll(quotes)
+        }
+      }
+    }
+    return result
+  }
+
+  private fun possibleNames(author: String): Set<String> {
+    // все возможные перестановки частей имени
     TODO()
   }
 
-  fun suggestSimilarAuthors(author: String): List<String> {
+  fun similarAuthors(author: String): List<String> {
+    // проходим по списку существующих авторов и вычисляем расстояние, топ 10 минимальных возвращаем
     TODO()
   }
 
   private fun searchQuotes(bookId: Long, words: List<String>): List<String> {
+    // ищем слова в конкретной книге
     TODO()
   }
 }
