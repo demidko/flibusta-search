@@ -46,7 +46,7 @@ class Catalog(private val url: URL) {
     zipStream.use {
       val filename = zipStream.nextEntry?.name
       require(filename == "catalog.txt") {
-        "Required 'catalog.txt', but found '$filename'"
+        "Required catalog.txt, but found $filename"
       }
       val bufferedReader = zipStream.bufferedReader()
       val csvParser = csvFormat.parse(bufferedReader)

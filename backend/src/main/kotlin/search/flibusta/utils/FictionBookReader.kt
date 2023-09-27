@@ -6,7 +6,7 @@ import java.io.EOFException
 
 class FictionBookReader(private val dataInputStream: DataInputStream) : Closeable {
 
-  private val stopSymbols = ".?!".toSet()
+  private val stopSymbols = ".?!\n".toSet()
 
   private val charSequence = generateSequence(dataInputStream::readChar)
 
