@@ -35,6 +35,10 @@ class FictionBookReader(private val dataInputStream: DataInputStream) : Closeabl
     }
   }
 
+  fun sentenceSequence(): Sequence<String> {
+    return generateSequence(::nextSentence)
+  }
+
   private fun parseTag(): String {
     val tagSequence = charSequence.takeWhile { isTagEnd(it).not() }
     return tagSequence.toString().trimStart()
