@@ -13,11 +13,7 @@ module.exports = {
     new MiniCss(),
     new CopyPlugin({
       patterns: [
-        "./src/index.html",
-        {
-          from: "./src/favicon",
-          to: "./favicon/.",
-        },
+        "./src/index.html"
       ],
     }),
   ],
@@ -32,5 +28,5 @@ module.exports = {
   entry: "./src/main.js",
   output: {
     clean: true,
-  },
+  }
 };

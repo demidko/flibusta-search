@@ -1,9 +1,12 @@
 import "fomantic-ui/dist/semantic.min"
 import "fomantic-ui/dist/semantic.min.css"
 
-window.handler = async function (element) {
-  $.toast({
-    message: 'I am a toast, nice to meet you !'
-  });
-  $.modal('confirm', )
+window.search = search
+
+async function search() {
+  let author = document.getElementById("author-input").value
+  let words = document.getElementById("words-input").value
+  let response = await fetch(`search?author=${author}&words=${words}`)
+  let json = await response.json()
+  console.log(json)
 }

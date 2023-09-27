@@ -1,5 +1,5 @@
 {
-  "name": "application.app",
+  "name": "flibusta.search",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -19,6 +19,6 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "fomantic-ui": "^2.9.1"
+    "fomantic-ui": "^2.9.3"
   }
 }
