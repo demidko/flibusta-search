@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController
 import search.flibusta.dto.Quotes
 import search.flibusta.dto.Search
 import search.flibusta.dto.Suggest
-import java.io.File
 
 @Validated
 @RestController
@@ -24,7 +23,7 @@ class Api(private val quotesSearcher: QuotesSearcher, private val namesSearcher:
    */
   @GetMapping("/search")
   fun search(@NotBlank author: String, @NotBlank query: String): Search {
-    val quotes = quotesSearcher.searchQuotes(author, query)
+    val quotes = quotesSearcher.similarQuotes(author, query)
     if (quotes.isEmpty()) {
       val names = namesSearcher.similarNames(author)
       return Suggest(names)

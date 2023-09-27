@@ -14,7 +14,7 @@ class QuotesSearcher(private val catalog: Catalog, private val downloader: Downl
 
   private val logger = getLogger(javaClass)
 
-  fun searchQuotes(author: String, query: String): Map<FlibustaBook, Set<String>> {
+  fun similarQuotes(author: String, query: String): Map<FlibustaBook, Set<String>> {
     val bibliography = catalog.bibliography(author)
     val queryForms = baseformsOf(query)
     return buildMap {
@@ -24,14 +24,14 @@ class QuotesSearcher(private val catalog: Catalog, private val downloader: Downl
         logger.info("Downloading $bookName...")
         val book = downloader.downloadBook(id)
         logger.info("Search \"$query\" in $bookName...")
-        val quotes = searchQuotes(book, queryForms)
+        val quotes = similarQuotes(book, queryForms)
         logger.info("For \"$query\" found ${quotes.size} quotes in $bookName")
         put(meta, quotes)
       }
     }
   }
 
-  private fun searchQuotes(book: File, queryForms: Set<ComparableBaseform>): Set<String> {
+  private fun similarQuotes(book: File, queryForms: Set<ComparableBaseform>): Set<String> {
     val reader = FictionBookReader(DataInputStream(BufferedInputStream(FileInputStream(book))))
     reader.use {
       return buildSet {

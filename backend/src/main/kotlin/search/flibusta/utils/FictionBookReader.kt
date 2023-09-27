@@ -10,7 +10,7 @@ class FictionBookReader(private val dataInputStream: DataInputStream) : Closeabl
 
   private val charSequence = generateSequence(dataInputStream::readChar)
 
-  fun nextSentence(): String? {
+  fun readSentence(): String? {
     return buildString {
       try {
         for (char in charSequence) {
@@ -36,7 +36,7 @@ class FictionBookReader(private val dataInputStream: DataInputStream) : Closeabl
   }
 
   fun sentenceSequence(): Sequence<String> {
-    return generateSequence(::nextSentence)
+    return generateSequence(::readSentence)
   }
 
   private fun parseTag(): String {
