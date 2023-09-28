@@ -8,12 +8,12 @@ class FictionBookReader(private val dataInputStream: DataInputStream) : Closeabl
 
   private val stopSymbols = ".?!\n".toSet()
 
-  private val charSequence = generateSequence(dataInputStream::readChar)
+  private val charIterator = generateSequence(dataInputStream::readChar).iterator()
 
   fun readSentence(): String? {
     return buildString {
       try {
-        for (char in charSequence) {
+        for (char in charIterator) {
           if (isTagStart(char)) {
             val tag = parseTag()
             if (isBinaryTag(tag)) {
@@ -40,7 +40,7 @@ class FictionBookReader(private val dataInputStream: DataInputStream) : Closeabl
   }
 
   private fun parseTag(): String {
-    val tagSequence = charSequence.takeWhile { isTagEnd(it).not() }
+    val tagSequence = charIterator.asSequence().takeWhile { isTagEnd(it).not() }
     return tagSequence.toString().trimStart()
   }
 
@@ -49,8 +49,8 @@ class FictionBookReader(private val dataInputStream: DataInputStream) : Closeabl
   }
 
   private fun dropTagContent() {
-    charSequence.dropWhile { isTagStart(it).not() }
-    charSequence.dropWhile { isTagEnd(it).not() }
+    charIterator.asSequence().dropWhile { isTagStart(it).not() }
+    charIterator.asSequence().dropWhile { isTagEnd(it).not() }
   }
 
   private fun isTagStart(char: Char): Boolean {

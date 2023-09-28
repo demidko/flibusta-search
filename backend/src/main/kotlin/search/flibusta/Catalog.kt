@@ -1,10 +1,12 @@
 package search.flibusta
 
+import org.apache.commons.collections4.CollectionUtils.permutations
 import org.apache.commons.csv.CSVFormat.newFormat
 import org.apache.commons.csv.CSVRecord
 import org.slf4j.LoggerFactory.getLogger
 import search.flibusta.dto.FlibustaBook
-import search.flibusta.utils.NameUtils.possibleNames
+import search.flibusta.utils.TextUtils.normalizedName
+import search.flibusta.utils.TextUtils.possibleNames
 import java.net.URL
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
@@ -27,9 +29,12 @@ class Catalog(private val url: URL) {
     newFormat(';').builder()
       .setHeader(LAST_NAME, FIRST_NAME, MIDDLE_NAME, TITLE, SUBTITLE, LANGUAGE, YEAR, SERIES, ID)
       .setSkipHeaderRecord(true)
+      .setNullString("")
       .build()
 
   private val authorsToBooks = AtomicReference<Map<String, Set<FlibustaBook>>>()
+
+  private val authors = AtomicReference<Set<String>>()
 
   private val log = getLogger(javaClass)
 
@@ -43,6 +48,7 @@ class Catalog(private val url: URL) {
     val urlStream = url.openStream()
     val bufferedStream = urlStream.buffered()
     val zipStream = ZipInputStream(bufferedStream)
+    val authorsUpdate = mutableSetOf<String>()
     zipStream.use {
       val filename = zipStream.nextEntry?.name
       require(filename == "catalog.txt") {
@@ -52,15 +58,21 @@ class Catalog(private val url: URL) {
       val csvParser = csvFormat.parse(bufferedReader)
       csvParser.use {
         for (record in csvParser) {
-          val author = parseAuthor(record)
+          val authorName = parseAuthor(record)
+          for(p in permutations(authorName)) {
+            val nameVariant = p.joinToString(" ")
+            authorsUpdate.add(nameVariant)
+          }
+          val canonicalName = authorName.joinToString(" ")
           val book = parseBook(record)
-          val collection = authorsToBooksUpdate.getOrPut(author, ::mutableSetOf)
+          val collection = authorsToBooksUpdate.getOrPut(canonicalName, ::mutableSetOf)
           collection.add(book)
         }
       }
       zipStream.closeEntry()
     }
     authorsToBooks.set(authorsToBooksUpdate)
+    authors.set(authorsUpdate)
     log.info("Catalog successfully updated.")
   }
 
@@ -82,24 +94,27 @@ class Catalog(private val url: URL) {
     return FlibustaBook(id, composedName)
   }
 
-  private fun parseAuthor(record: CSVRecord): String {
+  private fun parseAuthor(record: CSVRecord): List<String> {
     val lastName = record.get(LAST_NAME)
     val firstName = record.get(FIRST_NAME)
     val middleName = record.get(MIDDLE_NAME)
-    return listOf(firstName, lastName, middleName).filter(String::isNotBlank).joinToString(" ")
+    val fullName = listOf(firstName, lastName, middleName)
+    return fullName.flatMap(::normalizedName)
   }
 
   fun bibliography(author: String): Set<FlibustaBook> {
-    val catalog = authorsToBooks.get()
     return buildSet {
+      val catalog = authorsToBooks.get()
       for (name in possibleNames(author)) {
-        val bibliography = catalog[name] ?: continue
-        addAll(bibliography)
+        catalog[name]?.let(::addAll)
       }
     }
   }
 
-  fun listAuthors(): Set<String> {
-    return authorsToBooks.get().keys
+  /**
+   * Все известные имена авторов
+   */
+  fun authors(): Set<String> {
+    return authors.get()
   }
 }
