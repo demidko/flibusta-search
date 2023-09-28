@@ -1,3 +1,3 @@
 package search.flibusta.dto
 
-data class FlibustaBook(val id: Long, val name: String)
+data class FlibustaBook(val id: Int, val name: String)

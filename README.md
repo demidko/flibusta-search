@@ -20,6 +20,8 @@
 
 ## Запуск через Docker
 
+Системные требования: от 4ГБ оперативной памяти и выше.
+
 ```shell
 docker run -v `pwd`:`pwd` -w `pwd` -it --rm -p 80:8080 ghcr.io/demidko/flibusta-search:main
 ```

@@ -6,17 +6,6 @@ typealias NormalizedName = Set<String>
 
 object TextUtils {
 
-  fun possibleNames(name: String): Set<String> {
-    val permutations = normalizedName(name).let(::permutations)
-    val result = mutableSetOf<String>()
-    for (p in permutations) {
-      for (size in 1..p.size) {
-        p.take(size).joinToString(" ").let(result::add)
-      }
-    }
-    return result
-  }
-
   fun normalizedName(n: String): List<String> {
     val parts = mutableListOf<String>()
     whileSplit(normalizedWord(n), parts::add)

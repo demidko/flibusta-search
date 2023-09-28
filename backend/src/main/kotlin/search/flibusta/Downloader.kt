@@ -16,7 +16,7 @@ class Downloader {
     }
   }
 
-  fun downloadBook(id: Long): File {
+  fun downloadBook(id: Int): File {
     val file = cacheDirectory.resolve("$id.fb2.zip")
     if (file.exists()) {
       return file
