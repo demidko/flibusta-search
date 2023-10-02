@@ -10,10 +10,10 @@ class QuotesSearcher(private val catalog: FlibustaRussianCatalog, private val do
 
   private val log = getLogger(javaClass)
 
-  fun searchQuotesCollections(requiredAuthor: String, query: String): Set<QuotesCollection> {
+  fun searchQuotesCollections(requiredAuthor: String, query: String): List<QuotesCollection> {
     val bibliography = catalog.bibliographyOf(requiredAuthor)
     val basis = morphologicalBasis(query)
-    return buildSet {
+    return buildList {
       for ((foundAuthor, books) in bibliography) {
         for (book in books) {
           val quotes = quotesOf(book, basis)

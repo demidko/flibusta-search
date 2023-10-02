@@ -14,8 +14,8 @@ import search.flibusta.entities.QuotesCollection
 class Api(private val searcher: QuotesSearcher) {
 
   @GetMapping("/search")
-  fun search(@NotBlank author: String, @NotBlank query: String): Set<QuotesCollection> {
-    return searcher.searchQuotesCollections(author, query)
+  fun search(@NotBlank author: String, @NotBlank q: String): List<QuotesCollection> {
+    return searcher.searchQuotesCollections(author, q)
   }
 
   @ResponseStatus(BAD_REQUEST)
