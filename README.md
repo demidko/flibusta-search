@@ -1,6 +1,6 @@
 # Flibusta Fun Search
 
-Поиск на Флибусте по автору и фразе. Приложение доступно по адресу [flibusta.fun](https://flibusta.fun)
+Поиск на Флибусте по автору и фразе. Веб-приложение доступно по адресу [flibusta.fun](https://flibusta.fun)
 
 ## Todo
 
