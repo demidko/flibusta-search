@@ -1,4 +1,4 @@
-# Flibusta Fun Search
+# Flibusta Search
 
 Поиск на Флибусте по автору и фразе.
 
