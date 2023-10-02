@@ -12,7 +12,7 @@ object BooksCatalogTest {
   @Disabled
   fun testCatalog() {
     val catalog = flibustaCatalog()
-    val bibliography = catalog.bibliography("Лао-цзы").map(FlibustaBook::name)
+    val bibliography = catalog.bibliographySearch("Лао-цзы").map(FlibustaBook::name)
     assertThat(bibliography).contains("Дао Дэ-цзин")
   }
 

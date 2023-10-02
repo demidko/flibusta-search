@@ -5,7 +5,9 @@ import org.apache.commons.csv.CSVFormat.newFormat
 import org.apache.commons.csv.CSVRecord
 import org.slf4j.LoggerFactory.getLogger
 import search.flibusta.dto.FlibustaBook
-import search.flibusta.utils.TextUtils.normalizedName
+import search.flibusta.utils.StringUtils.levenshteinDistance
+import search.flibusta.utils.StringUtils.normalizedName
+import search.flibusta.utils.StringUtils.variants
 import java.net.URL
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
@@ -32,7 +34,7 @@ class Catalog(private val url: URL) {
 
   private val authorsToBooks = AtomicReference<Map<String, Set<FlibustaBook>>>()
 
-  private val authorsToVariants = AtomicReference<Map<String, Set<String>>>()
+  private val variantsToCanonicalNames = AtomicReference<Map<String, Set<String>>>()
 
   private val log = getLogger(javaClass)
 
@@ -51,7 +53,7 @@ class Catalog(private val url: URL) {
     val urlStream = url.openStream()
     val bufferedStream = urlStream.buffered()
     val zipStream = ZipInputStream(bufferedStream)
-    val authorsToVariantsUpdate = mutableMapOf<String, MutableSet<String>>()
+    val variantsToCanonicalNamesUpdate = mutableMapOf<String, MutableSet<String>>()
     zipStream.use {
       val filename = zipStream.nextEntry?.name
       require(filename == "catalog.txt") {
@@ -61,12 +63,21 @@ class Catalog(private val url: URL) {
       val csvParser = csvFormat.parse(bufferedReader)
       csvParser.use {
         for (record in csvParser) {
+          val lang = record.get(LANGUAGE)
+          if (lang != "ru") {
+            continue
+          }
           ++recordsTotal
           val nameParts = parseAuthor(record)
           val canonicalName = nameParts.joinToString(" ")
           val nameVariants = downgrade(nameParts)
-          val namesCollection = authorsToVariantsUpdate.getOrPut(canonicalName, ::mutableSetOf)
-          namesCollection.addAll(nameVariants)
+          for (v in nameVariants) {
+            if(v.length < 5) {
+              continue
+            }
+            val canonicalNames = variantsToCanonicalNamesUpdate.getOrPut(v, ::mutableSetOf)
+            canonicalNames.add(canonicalName)
+          }
           val book = parseBook(record)
           val booksCollection = authorsToBooksUpdate.getOrPut(canonicalName, ::mutableSetOf)
           booksCollection.add(book)
@@ -74,7 +85,7 @@ class Catalog(private val url: URL) {
       }
     }
     authorsToBooks.set(authorsToBooksUpdate)
-    authorsToVariants.set(authorsToVariantsUpdate)
+    variantsToCanonicalNames.set(variantsToCanonicalNamesUpdate)
     log.info("Catalog successfully updated.")
     if (brokenRecords > 0) {
       log.warn("Books parsed: $recordsTotal. Broken CSV records detected: $brokenRecords")
@@ -115,13 +126,50 @@ class Catalog(private val url: URL) {
     return fullName.flatMap(::normalizedName)
   }
 
-  fun bibliography(author: String): Set<FlibustaBook> {
-    return buildSet {
-      val catalog = authorsToBooks.get()
-      for (name in downgrade(author)) {
-        catalog[name]?.let(::addAll)
+  fun bibliographySearch(author: String): Set<FlibustaBook> {
+    val catalog = authorsToBooks.get()
+    return catalog[author] ?: extendedBibliographySearch(author)
+  }
+
+  private fun extendedBibliographySearch(author: String): Set<FlibustaBook> {
+    val catalog = authorsToBooks.get()
+    val bibliography = mutableSetOf<FlibustaBook>()
+    for (name in downgrade(author)) {
+      catalog[name]?.let(bibliography::addAll)
+    }
+    if (bibliography.isEmpty()) {
+      return moreExtendedBibliographySearch(author)
+    }
+    return bibliography
+  }
+
+  private fun moreExtendedBibliographySearch(author: String): Set<FlibustaBook> {
+    val recognizedAuthor = fastRecognizeAuthor(author) ?: return emptySet()
+    log.warn("\"$author\" recognized as \"$recognizedAuthor\"")
+    return authorsToBooks.get()[recognizedAuthor] ?: emptySet()
+  }
+
+  private fun fastRecognizeAuthor(author: String): String? {
+    val nameVariants = variants(author)
+    val foundAuthors = mutableSetOf<String>()
+    val variantsToAuthors = variantsToCanonicalNames.get()
+    for (v in nameVariants) {
+      val newAuthors = variantsToAuthors[v] ?: continue
+      foundAuthors.addAll(newAuthors)
+    }
+    if (foundAuthors.isEmpty()) {
+      return null
+    }
+    var closestDistance = Int.MAX_VALUE
+    var closestAuthor = ""
+    for (otherAuthor in foundAuthors) {
+      val distance = levenshteinDistance(author, otherAuthor)
+      if (distance < closestDistance) {
+        closestDistance = distance
+        closestAuthor = otherAuthor
       }
     }
+    return closestAuthor
   }
 
   private fun downgrade(name: String): Set<String> {
@@ -140,9 +188,9 @@ class Catalog(private val url: URL) {
   }
 
   /**
-   * Все известные имена авторов (каноническому имени соответствуют перестановки & сокращения)
+   * Все известные имена авторов (перестановкам & сокращениям соответствуют канонические имена)
    */
   fun authors(): Map<String, Set<String>> {
-    return authorsToVariants.get()
+    return variantsToCanonicalNames.get()
   }
 }

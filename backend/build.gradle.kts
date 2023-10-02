@@ -39,8 +39,8 @@ tasks.withType<JavaCompile> {
   targetCompatibility = "20"
 }
 tasks.test {
-  minHeapSize = "2048m"
-  maxHeapSize = "4096m"
+  minHeapSize = "4096m"
+  maxHeapSize = "8192m"
   useJUnitPlatform()
   jvmArgs("--enable-preview")
 }

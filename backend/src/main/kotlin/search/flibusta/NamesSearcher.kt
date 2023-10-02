@@ -1,48 +1,38 @@
 package search.flibusta
 
-import org.apache.commons.collections4.CollectionUtils.permutations
-import org.apache.commons.text.similarity.LevenshteinDistance
-import search.flibusta.utils.TextUtils.normalizedName
+import search.flibusta.utils.StringUtils.levenshteinDistance
+import search.flibusta.utils.StringUtils.variants
 import kotlin.collections.Map.Entry
 
 class NamesSearcher(private val catalog: Catalog) {
 
-  private class RatedName(val name: String, val distance: Int)
-
-  private val distance = LevenshteinDistance()
+  private class RatedCanonSet(val distance: Int, val canons: Set<String>)
 
   fun similarNames(name: String): Set<String> {
     return catalog.authors().asSequence()
-      .map(rate(variants(name)))
-      .sortedBy(RatedName::distance)
-      .map(RatedName::name)
+      .map(ratedCanonSet(variants(name)))
+      .sortedBy(RatedCanonSet::distance)
       .take(10)
+      .flatMap(RatedCanonSet::canons)
       .toSet()
   }
 
-  private fun variants(name: String): Set<String> {
-    return normalizedName(name)
-      .let(::permutations)
-      .map { it.joinToString(" ") }
-      .toSet()
-  }
-
-  private fun rate(source: Set<String>): (Entry<String, Set<String>>) -> RatedName {
-    return { (canonicalName, nameVariants) ->
-      RatedName(canonicalName, distance(source, nameVariants))
+  private fun ratedCanonSet(variants: Set<String>): (Entry<String, Set<String>>) -> RatedCanonSet {
+    return { (otherVariant, otherCanon) ->
+      ratedCanonSet(variants, otherVariant, otherCanon)
     }
   }
 
-  private fun distance(source: Set<String>, other: Set<String>): Int {
-    var resultDistance = Int.MAX_VALUE
-    for (originalName in source) {
-      for (possibleName in other) {
-        val newDistance = distance.apply(possibleName, originalName)
-        if (newDistance < resultDistance) {
-          resultDistance = newDistance
-        }
-      }
-    }
-    return resultDistance
+  private fun ratedCanonSet(nameVariants: Set<String>, canonVariant: String, canonSet: Set<String>): RatedCanonSet {
+    return nameVariants.asSequence().map(ratedCanonSet(canonVariant, canonSet)).minBy(RatedCanonSet::distance)
+  }
+
+  private fun ratedCanonSet(canonVariant: String, canonSet: Set<String>): (String) -> RatedCanonSet {
+    return { ratedCanonSet(it, canonVariant, canonSet) }
+  }
+
+  private fun ratedCanonSet(nameVariant: String, canonVariant: String, canonSet: Set<String>): RatedCanonSet {
+    val distance = levenshteinDistance(nameVariant, canonVariant)
+    return RatedCanonSet(distance, canonSet)
   }
 }
