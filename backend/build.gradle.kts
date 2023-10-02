@@ -13,13 +13,15 @@ plugins {
   kotlin("plugin.spring") version "1.9.10"
 }
 dependencies {
+  implementation("org.apache.lucene:lucene-analyzers-common:8.11.2")
+  implementation("org.apache.lucene:lucene-queryparser:9.8.0")
+  implementation("org.apache.commons:commons-csv:1.10.0")
+  implementation("com.github.demidko:aot:2022.11.28")
+
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
-  implementation("org.apache.commons:commons-csv:1.10.0")
-  implementation("org.apache.commons:commons-text:1.10.0")
-  implementation("org.apache.commons:commons-collections4:4.4")
-  implementation("com.github.demidko:aot:2022.11.28")
+
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("com.google.truth:truth:1.1.3")
   testImplementation("io.mockk:mockk:1.13.4")

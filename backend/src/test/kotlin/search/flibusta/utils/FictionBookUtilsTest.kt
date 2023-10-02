@@ -2,16 +2,16 @@ package search.flibusta.utils
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
-import search.flibusta.Downloader
-import search.flibusta.utils.Fb2Parser.sentencesOf
+import search.flibusta.FlibustaDownloader
+import search.flibusta.utils.FictionBookUtils.sentencesOf
 
-class Fb2ParserTest {
+
+class FictionBookUtilsTest {
 
   @Test
   fun sentenceSequence() {
-    val bookId = 253438
-    val downloader = Downloader()
-    val file = downloader.tryDownloadBook(bookId)!!
+    val downloader = FlibustaDownloader("https://flibusta.is")
+    val file = downloader.downloadFb2(253438)
     val sentence = sentencesOf(file).first().toString()
     assertThat(sentence).isEqualTo("Антуан де Сент-Экзюпери")
   }
