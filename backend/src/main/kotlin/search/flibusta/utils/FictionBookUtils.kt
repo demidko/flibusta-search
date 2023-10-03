@@ -1,5 +1,6 @@
 package search.flibusta.utils
 
+import org.slf4j.LoggerFactory
 import org.w3c.dom.Node
 import search.flibusta.entities.Sentence
 import java.io.BufferedInputStream
@@ -14,24 +15,35 @@ object FictionBookUtils {
 
   private val sentenceStopSymbols = setOf('?', '!', '.')
 
+  private val log = LoggerFactory.getLogger(javaClass)
+
   fun sentencesOf(fb2: File): Sequence<Sentence> {
     val zip = ZipInputStream(BufferedInputStream(FileInputStream(fb2)))
     zip.use {
-      val entry = zip.nextEntry
-      requireNotNull(entry) { "Invalid fb2: $fb2" }
-      val filename = entry.name
-      require(filename.endsWith(".fb2")) { "$fb2: expected fb2, but found $filename" }
-      val document = factory.newDocumentBuilder().parse(zip)
-      val nodes = document.getElementsByTagName("body")
-      require(nodes.length > 0) { "$fb2: body not found" }
       return sequence {
-        for (i in 0..<nodes.length) {
-          val body = nodes.item(i)
-          require(body.hasChildNodes()) { "$fb2 body: content not found" }
-          yieldAll(sentencesOf(body))
+        var entry = zip.nextEntry
+        while (entry != null) {
+          val filename = entry.name
+          if(isFb2(filename)) {
+            val document = factory.newDocumentBuilder().parse(zip)
+            val nodes = document.getElementsByTagName("body")
+            require(nodes.length > 0) { "$fb2: body not found" }
+            for (i in 0..<nodes.length) {
+              val body = nodes.item(i)
+              require(body.hasChildNodes()) { "$fb2 body: content not found" }
+              yieldAll(sentencesOf(body))
+            }
+          } else {
+            log.warn("$fb2: expected fb2, but found $filename")
+          }
+          entry = zip.nextEntry
         }
       }
     }
+  }
+
+  fun isFb2(filename: String): Boolean {
+    return filename.endsWith(".fb2") || filename.endsWith(".fbd")
   }
 
   private fun sentencesOf(node: Node): Sequence<Sentence> {

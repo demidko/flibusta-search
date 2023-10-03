@@ -12,6 +12,7 @@ import org.apache.lucene.index.DirectoryReader.open
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.queryparser.classic.QueryParser
+import org.apache.lucene.search.FuzzyQuery
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.search.Query
 import org.apache.lucene.store.ByteBuffersDirectory
@@ -113,7 +114,8 @@ class FlibustaRussianCatalog(mirror: String) {
   }
 
   private fun queryForAuthor(author: String): Query {
-    return queryParser.parse("$author~")
+    // todo надо уменьшить допустимое расстояние (много нерелевантых рещультатов)
+    return queryParser.parse("$author~0.7")
   }
 
   private fun documentOf(record: CSVRecord): Document {

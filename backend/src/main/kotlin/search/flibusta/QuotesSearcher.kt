@@ -37,18 +37,19 @@ class QuotesSearcher(private val catalog: FlibustaRussianCatalog, private val do
   }
 
   private fun quotesOf(book: FlibustaBook, q: Set<String>): Set<String> {
-    return try {
-      val file = downloader.downloadFb2(book.id)
-      buildSet {
-        for (sentence in sentencesOf(file)) {
-          if (q in sentence) {
-            add(sentence.toString())
-          }
+    val file =
+      try {
+        downloader.downloadFb2(book.id)
+      } catch (e: RuntimeException) {
+        log.warn("Can't download $book", e)
+        return emptySet()
+      }
+    return buildSet {
+      for (sentence in sentencesOf(file)) {
+        if (q in sentence) {
+          add(sentence.toString())
         }
       }
-    } catch (e: RuntimeException) {
-      log.warn("Can't download fb2 $book", e)
-      emptySet()
     }
   }
 }

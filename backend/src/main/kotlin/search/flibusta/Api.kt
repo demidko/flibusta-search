@@ -19,6 +19,11 @@ class Api(private val searcher: QuotesSearcher) {
     return searcher.searchQuotesCollections(author, q)
   }
 
+  @GetMapping("/download")
+  fun download(id: Int) {
+    TODO()
+  }
+
   @ResponseStatus(BAD_REQUEST)
   @ExceptionHandler(RuntimeException::class)
   fun handleRuntimeException(e: RuntimeException): String? {

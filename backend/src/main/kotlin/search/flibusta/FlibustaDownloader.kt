@@ -40,4 +40,8 @@ class FlibustaDownloader(private val mirror: String) {
     }
     return file
   }
+
+  fun cleanup() {
+    TODO()
+  }
 }
