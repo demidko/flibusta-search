@@ -22,6 +22,7 @@ import search.flibusta.entities.FlibustaBook
 import search.flibusta.utils.UrlUtils.urlOf
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
+import kotlin.Int.Companion.MAX_VALUE
 
 class FlibustaRussianCatalog(mirror: String) {
 
@@ -70,7 +71,7 @@ class FlibustaRussianCatalog(mirror: String) {
     val authorToBibliography = mutableMapOf<String, MutableList<FlibustaBook>>()
     reader.use {
       val searcher = IndexSearcher(reader)
-      val hits = searcher.search(q, 100)
+      val hits = searcher.search(q, MAX_VALUE)
       val storedFields = searcher.storedFields()
       for (hit in hits.scoreDocs) {
         val document = storedFields.document(hit.doc)

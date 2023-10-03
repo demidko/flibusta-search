@@ -6,7 +6,7 @@ class Sentence(private val wholeText: String) {
 
   private val basis = extendedMorphologicalBasis(wholeText)
 
-  fun contains(basis: Set<String>): Boolean {
+  operator fun contains(basis: Set<String>): Boolean {
     return this.basis.containsAll(basis)
   }
 

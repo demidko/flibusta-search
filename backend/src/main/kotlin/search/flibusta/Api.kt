@@ -1,6 +1,7 @@
 package search.flibusta
 
 import jakarta.validation.constraints.NotBlank
+import org.slf4j.LoggerFactory.getLogger
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.ExceptionHandler
