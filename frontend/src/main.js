@@ -24,10 +24,10 @@ async function search() {
     resultGrid.innerHTML = `
       <div class="ui floating message">
         <p>К сожалению ничего найти не удалось 😔</p>
-      </div>
-    `
+      </div>`
     return
   }
+  resultGrid.innerHTML = ""
   for (let {author, book, quotes} of json) {
     let {id, name} = book
     let tag = `
@@ -44,9 +44,4 @@ async function search() {
       </div>`
     resultGrid.insertAdjacentHTML("beforeend", tag)
   }
-}
-
-
-function removeMessage() {
-
 }
