@@ -12,7 +12,7 @@ class FictionBookUtilsTest {
   fun sentenceSequence() {
     val downloader = FlibustaDownloader("https://flibusta.is")
     val file = downloader.downloadFb2(253438)
-    val sentence = sentencesOf(file).first().toString()
+    val sentence = sentencesOf(file, MorphAnalyzer()).first().toString()
     assertThat(sentence).isEqualTo("Антуан де Сент-Экзюпери")
   }
 }

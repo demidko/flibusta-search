@@ -114,8 +114,7 @@ class FlibustaRussianCatalog(mirror: String) {
   }
 
   private fun queryForAuthor(author: String): Query {
-    // todo надо уменьшить допустимое расстояние (много нерелевантых рещультатов)
-    return queryParser.parse("$author~0.7")
+    return queryParser.parse("$author~0.75")
   }
 
   private fun documentOf(record: CSVRecord): Document {

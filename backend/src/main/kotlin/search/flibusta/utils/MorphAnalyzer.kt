@@ -4,7 +4,7 @@ import com.github.demidko.aot.WordformMeaning
 import com.github.demidko.aot.WordformMeaning.lookupForMeanings
 import org.tartarus.snowball.ext.RussianStemmer
 
-object AnalyzersUtils {
+class MorphAnalyzer {
 
   private val stemmer = RussianStemmer()
 

@@ -6,6 +6,7 @@ import search.flibusta.entities.Sentence
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.util.zip.ZipInputStream
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -17,26 +18,31 @@ object FictionBookUtils {
 
   private val log = LoggerFactory.getLogger(javaClass)
 
-  fun sentencesOf(fb2: File): Sequence<Sentence> {
+  fun sentencesOf(fb2: File, analyzer: MorphAnalyzer): Sequence<Sentence> {
     val zip = ZipInputStream(BufferedInputStream(FileInputStream(fb2)))
-    zip.use {
-      return sequence {
+    return sequence {
+      zip.use {
         var entry = zip.nextEntry
         while (entry != null) {
           val filename = entry.name
-          if(isFb2(filename)) {
+          if (isFb2(filename)) {
             val document = factory.newDocumentBuilder().parse(zip)
             val nodes = document.getElementsByTagName("body")
             require(nodes.length > 0) { "$fb2: body not found" }
             for (i in 0..<nodes.length) {
               val body = nodes.item(i)
               require(body.hasChildNodes()) { "$fb2 body: content not found" }
-              yieldAll(sentencesOf(body))
+              yieldAll(sentencesOf(body, analyzer))
             }
           } else {
             log.warn("$fb2: expected fb2, but found $filename")
           }
-          entry = zip.nextEntry
+          try {
+            zip.closeEntry()
+            entry = zip.nextEntry
+          } catch (e: IOException) {
+            break
+          }
         }
       }
     }
@@ -46,21 +52,21 @@ object FictionBookUtils {
     return filename.endsWith(".fb2") || filename.endsWith(".fbd")
   }
 
-  private fun sentencesOf(node: Node): Sequence<Sentence> {
+  private fun sentencesOf(node: Node, analyzer: MorphAnalyzer): Sequence<Sentence> {
     if (!node.hasChildNodes() || node.nodeName == "p") {
-      return sentencesOf(node.textContent)
+      return sentencesOf(node.textContent, analyzer)
     }
     val children = node.childNodes
     val count = children.length
     return sequence {
       for (i in 0..<count) {
         val child = children.item(i)
-        yieldAll(sentencesOf(child))
+        yieldAll(sentencesOf(child, analyzer))
       }
     }
   }
 
-  private fun sentencesOf(text: String): Sequence<Sentence> {
+  private fun sentencesOf(text: String, analyzer: MorphAnalyzer): Sequence<Sentence> {
     return sequence {
       val buf = StringBuilder()
       var isOpenQuote = false
@@ -91,21 +97,22 @@ object FictionBookUtils {
             continue
           }
           buf.append(c)
-          yieldSentence(buf)
+          yieldSentence(buf, analyzer)
           buf.clear()
           continue
         }
         buf.append(c)
       }
       if (buf.isNotBlank()) {
-        yieldSentence(buf)
+        yieldSentence(buf, analyzer)
       }
     }
   }
 
-  private suspend fun SequenceScope<Sentence>.yieldSentence(buf: StringBuilder) {
+  private suspend fun SequenceScope<Sentence>.yieldSentence(buf: StringBuilder, analyzer: MorphAnalyzer) {
     val wholeText = buf.trim().toString()
-    yield(Sentence(wholeText))
+    val basis = analyzer.extendedMorphologicalBasis(wholeText)
+    yield(Sentence(wholeText, basis))
   }
 
   private fun isSentenceStopSymbol(c: Char): Boolean {
