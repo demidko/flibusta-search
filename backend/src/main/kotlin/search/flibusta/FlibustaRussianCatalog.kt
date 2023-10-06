@@ -11,25 +11,29 @@ import org.apache.lucene.document.TextField
 import org.apache.lucene.index.DirectoryReader.open
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
+import org.apache.lucene.index.Term
+import org.apache.lucene.queries.spans.SpanMultiTermQueryWrapper
+import org.apache.lucene.queries.spans.SpanNearQuery
 import org.apache.lucene.queryparser.classic.QueryParser
+import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser
+import org.apache.lucene.sandbox.queries.FuzzyLikeThisQuery
 import org.apache.lucene.search.FuzzyQuery
+import org.apache.lucene.search.FuzzyTermsEnum
 import org.apache.lucene.search.IndexSearcher
-import org.apache.lucene.search.Query
 import org.apache.lucene.store.ByteBuffersDirectory
 import org.apache.lucene.store.Directory
 import org.slf4j.LoggerFactory.getLogger
 import search.flibusta.entities.Bibliography
-import search.flibusta.entities.FlibustaBook
+import search.flibusta.utils.SimilarBibliographiesCollector
 import search.flibusta.utils.UrlUtils.urlOf
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
 import kotlin.Int.Companion.MAX_VALUE
 
+
 class FlibustaRussianCatalog(mirror: String) {
 
-  private val catalogUrl = urlOf("$mirror/catalog/catalog.zip")
-
-  private companion object {
+  companion object {
     const val LAST_NAME = "Last Name"
     const val FIRST_NAME = "First Name"
     const val MIDDLE_NAME = "Middle Name"
@@ -40,6 +44,8 @@ class FlibustaRussianCatalog(mirror: String) {
     const val SERIES = "Series"
     const val ID = "ID"
   }
+
+  private val catalogUrl = urlOf("$mirror/catalog/catalog.zip")
 
   private val csvFormat =
     newFormat(';').builder()
@@ -59,31 +65,30 @@ class FlibustaRussianCatalog(mirror: String) {
 
   private val config = IndexWriterConfig(analyzer)
 
-  private val queryParser = QueryParser("author", analyzer)
+  private val queryParser = ComplexPhraseQueryParser("author", analyzer)
 
   init {
     updateCatalog()
   }
 
-  fun bibliographyOf(author: String): List<Bibliography> {
-    val q = queryForAuthor(author)
-    val index = index.get()
-    val reader = open(index)
-    val authorToBibliography = mutableMapOf<String, MutableList<FlibustaBook>>()
-    reader.use {
-      val searcher = IndexSearcher(reader)
-      val hits = searcher.search(q, MAX_VALUE)
-      val storedFields = searcher.storedFields()
-      for (hit in hits.scoreDocs) {
+  fun searchAuthors(author: String): List<Bibliography> {
+    val query = queryParser.parse(author)
+    val directory = index.get()
+    val directoryReader = open(directory)
+    val bibliographiesCollector = SimilarBibliographiesCollector(author, 3)
+    directoryReader.use {
+      val indexSearcher = IndexSearcher(directoryReader)
+      val topDocs = indexSearcher.search(query, MAX_VALUE)
+      val storedFields = indexSearcher.storedFields()
+      for (hit in topDocs.scoreDocs) {
         val document = storedFields.document(hit.doc)
         val foundAuthor = document.getField("author").stringValue()
-        val book = document.getField("book").stringValue()
+        val title = document.getField("book").stringValue()
         val id = document.getField("id").numericValue().toInt()
-        val collection = authorToBibliography.getOrPut(foundAuthor, ::mutableListOf)
-        collection.add(FlibustaBook(id, book))
+        bibliographiesCollector.processBook(foundAuthor, id, title)
       }
     }
-    return authorToBibliography.map { (author, books) -> Bibliography(author, books) }
+    return bibliographiesCollector.listBibliographies()
   }
 
   fun updateCatalog() {
@@ -113,9 +118,6 @@ class FlibustaRussianCatalog(mirror: String) {
     }
   }
 
-  private fun queryForAuthor(author: String): Query {
-    return queryParser.parse("$author~0.75")
-  }
 
   private fun documentOf(record: CSVRecord): Document {
     return Document().apply {
@@ -180,7 +182,12 @@ class FlibustaRussianCatalog(mirror: String) {
     val lastName = record.get(LAST_NAME) ?: ""
     val firstName = record.get(FIRST_NAME) ?: ""
     val middleName = record.get(MIDDLE_NAME) ?: ""
-    val fullName = listOf(firstName, lastName, middleName).filter(String::isNotBlank).joinToString(" ")
+    val fullName =
+      listOf(firstName, lastName, middleName)
+        .filter(String::isNotBlank)
+        .joinToString(" ") {
+          it.replace('-', ' ')
+        }
     return TextField("author", fullName, YES)
   }
 }

@@ -26,9 +26,4 @@ frontend/dist
 
 cache
 
-
-
-
-
-
-
+/backend/src/main/resources/public/

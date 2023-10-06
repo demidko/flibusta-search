@@ -4,6 +4,9 @@ import com.github.demidko.aot.WordformMeaning
 import com.github.demidko.aot.WordformMeaning.lookupForMeanings
 import org.tartarus.snowball.ext.RussianStemmer
 
+/**
+ * Предназначен для использования в одном потоке
+ */
 class MorphAnalyzer {
 
   private val stemmer = RussianStemmer()
@@ -48,6 +51,7 @@ class MorphAnalyzer {
     stemmer.stem()
     return stemmer.current
   }
+
 
   private inline fun whileSplit(sentence: String, crossinline f: (String) -> Unit) {
     val buf = StringBuilder()

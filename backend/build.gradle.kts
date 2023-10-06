@@ -17,6 +17,8 @@ dependencies {
   implementation("org.apache.lucene:lucene-queryparser:9.8.0")
   implementation("org.apache.commons:commons-csv:1.10.0")
   implementation("com.github.demidko:aot:2022.11.28")
+  implementation("org.apache.commons:commons-collections4:4.4")
+  implementation("org.apache.commons:commons-text:1.10.0")
 
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -41,8 +43,8 @@ tasks.withType<JavaCompile> {
   targetCompatibility = "20"
 }
 tasks.test {
-  minHeapSize = "4096m"
-  maxHeapSize = "8192m"
+  minHeapSize = "2048m"
+  maxHeapSize = "4096m"
   useJUnitPlatform()
   jvmArgs("--enable-preview")
 }

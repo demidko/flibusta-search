@@ -2,17 +2,17 @@ package search.flibusta
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
+import search.flibusta.FlibustaRussianCatalogTest.catalog
+import search.flibusta.utils.FictionBookUtilsTest.downloader
 
 class QuotesSearcherTest {
 
+  private val searcher = QuotesSearcher(catalog, downloader)
+
   @Test
   fun searchQuotes() {
-    val mirror = "https://flibusta.is"
-    val catalog = FlibustaRussianCatalog(mirror)
-    val downloader = FlibustaDownloader(mirror)
-    val searcher = QuotesSearcher(catalog, downloader)
     // ошибка (буква у) допущена намерено, поиск должен распознать автора
-    val collections = searcher.searchQuotesCollections("экзупери", "Принц сказал розе")
+    val collections = searcher.quotes("экзюпери", "Принц сказал розе")
     assertThat(collections).hasSize(9)
   }
 }

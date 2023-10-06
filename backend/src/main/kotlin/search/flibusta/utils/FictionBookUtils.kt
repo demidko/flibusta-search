@@ -48,7 +48,7 @@ object FictionBookUtils {
     }
   }
 
-  fun isFb2(filename: String): Boolean {
+  private fun isFb2(filename: String): Boolean {
     return filename.endsWith(".fb2") || filename.endsWith(".fbd")
   }
 

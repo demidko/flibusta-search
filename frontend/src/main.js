@@ -8,7 +8,7 @@ async function search() {
   let author = document.getElementById("author-input").value
   let query = document.getElementById("query-input").value
   resultGrid.innerHTML = `
-    <div class="ui compact center aligned icon message" id = "result-message">
+    <div class="ui compact icon message" id = "result-message">
     <i class="notched circle loading icon"></i>
     <div class="content">
       <div class="header">
@@ -22,7 +22,7 @@ async function search() {
   let json = await response.json()
   if (json.length === 0) {
     resultGrid.innerHTML = `
-      <div class="ui compact center aligned floating message">
+      <div class="ui compact floating message">
         <p>К сожалению ничего найти не удалось 😔</p>
       </div>`
     return
@@ -31,7 +31,7 @@ async function search() {
   for (let {author, book, quotes} of json) {
     let {id, name} = book
     let tag = `
-      <div class="ui compact center aligned message">
+      <div class="ui compact message">
         <div class="header">
         ${author} — <a href="download?id=${id}">${name}</a>
         </div>

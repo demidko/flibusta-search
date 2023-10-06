@@ -30,9 +30,14 @@ class App {
     return QuotesSearcher(catalog(), downloader())
   }
 
-  @Scheduled(fixedDelay = 15, timeUnit = MINUTES, initialDelay = 15)
+  @Scheduled(fixedDelay = 30, timeUnit = MINUTES, initialDelay = 30)
   fun updateCatalog() {
     catalog().updateCatalog()
+  }
+
+  @Scheduled(fixedDelay = 6, timeUnit = MINUTES, initialDelay = 6)
+  fun clearCache() {
+    downloader().clearCache()
   }
 }
 
