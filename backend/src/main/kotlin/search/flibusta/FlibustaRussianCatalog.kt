@@ -11,14 +11,8 @@ import org.apache.lucene.document.TextField
 import org.apache.lucene.index.DirectoryReader.open
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
-import org.apache.lucene.index.Term
-import org.apache.lucene.queries.spans.SpanMultiTermQueryWrapper
-import org.apache.lucene.queries.spans.SpanNearQuery
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser
-import org.apache.lucene.sandbox.queries.FuzzyLikeThisQuery
-import org.apache.lucene.search.FuzzyQuery
-import org.apache.lucene.search.FuzzyTermsEnum
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.store.ByteBuffersDirectory
 import org.apache.lucene.store.Directory
@@ -65,13 +59,12 @@ class FlibustaRussianCatalog(mirror: String) {
 
   private val config = IndexWriterConfig(analyzer)
 
-  private val queryParser = ComplexPhraseQueryParser("author", analyzer)
-
   init {
     updateCatalog()
   }
 
   fun searchAuthors(author: String): List<Bibliography> {
+    val queryParser = QueryParser("author", analyzer)
     val query = queryParser.parse(author)
     val directory = index.get()
     val directoryReader = open(directory)

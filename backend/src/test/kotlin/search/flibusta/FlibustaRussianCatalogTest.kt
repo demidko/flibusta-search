@@ -7,20 +7,12 @@ import search.flibusta.utils.MultiName
 
 object FlibustaRussianCatalogTest {
 
-  private val log = LoggerFactory.getLogger(javaClass)
-
-  val catalog = FlibustaRussianCatalog("https://flibusta.is")
+  val catalog by lazy { FlibustaRussianCatalog("https://flibusta.is") }
 
   @Test
   fun testSearchAuthor() {
-    val authors = catalog.searchAuthors("""Кира Райли~""") // ищем Кору Рейли
-    log.info("${authors.size} authors found")
-    for ((name, books) in authors) {
-      log.info(name)
-      for (b in books) {
-        log.info("  $b")
-      }
-    }
-    //assertThat(authors).hasSize(9)
+    /**
+     * Todo. В идеале хотелось бы добиться результата, когда запрос "Кира Райли" находил бы "Кору Рейли"
+     */
   }
 }

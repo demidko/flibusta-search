@@ -2,7 +2,6 @@ package search.flibusta.utils
 
 import org.apache.commons.collections4.CollectionUtils.permutations
 import org.apache.commons.text.similarity.LevenshteinDistance
-import org.slf4j.LoggerFactory.getLogger
 import java.util.Comparator.reverseOrder
 import kotlin.Int.Companion.MAX_VALUE
 
@@ -47,7 +46,7 @@ class MultiName(source: String) {
   }
 
   private fun normalizedVariantsByCategory(name: String): Map<Int, Set<String>> {
-    val parts = name.lowercase().replace('ё', 'е').split(" ")
+    val parts = name.lowercase().replace('ё', 'е').split(" ", "-")
     val permutations = mutableMapOf<Int, MutableSet<String>>()
     for (permutedParts in permutations(parts)) {
       for (i in 1..permutedParts.size) {

@@ -3,6 +3,8 @@ import "fomantic-ui/dist/semantic.min.css"
 
 window.search = search
 
+window.debugAuthor = debugAuthor
+
 async function search() {
   let resultGrid = document.getElementById("result-grid")
   let author = document.getElementById("author-input").value
@@ -43,5 +45,17 @@ async function search() {
         </ul>
       </div>`
     resultGrid.insertAdjacentHTML("beforeend", tag)
+  }
+}
+
+async function debugAuthor(author) {
+  let response = await fetch(`/authors?query=${author}`)
+  let json = await response.json()
+  console.log(`Authors found: ${json.length}`)
+  for(let {author, books} of json) {
+    console.log(author)
+    for(let {id, title} of books) {
+      console.log(`  ${id}: ${title}`)
+    }
   }
 }

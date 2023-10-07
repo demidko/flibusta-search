@@ -7,7 +7,7 @@ import search.flibusta.utils.FictionBookUtilsTest.downloader
 
 class QuotesSearcherTest {
 
-  private val searcher = QuotesSearcher(catalog, downloader)
+  private val searcher by lazy { QuotesSearcher(catalog, downloader) }
 
   @Test
   fun searchQuotes() {
