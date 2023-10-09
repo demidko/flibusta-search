@@ -2,7 +2,7 @@ package search.flibusta.utils
 
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Node
-import search.flibusta.entities.Sentence
+import search.flibusta.dto.Sentence
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -111,7 +111,7 @@ object FictionBookUtils {
 
   private suspend fun SequenceScope<Sentence>.yieldSentence(buf: StringBuilder, analyzer: MorphAnalyzer) {
     val wholeText = buf.trim().toString()
-    val basis = analyzer.extendedMorphologicalBasis(wholeText)
+    val basis = analyzer.sentenceBasis(wholeText)
     yield(Sentence(wholeText, basis))
   }
 

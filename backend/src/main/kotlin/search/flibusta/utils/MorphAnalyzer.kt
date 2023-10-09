@@ -5,16 +5,16 @@ import com.github.demidko.aot.WordformMeaning.lookupForMeanings
 import org.tartarus.snowball.ext.RussianStemmer
 
 /**
- * Предназначен для использования в одном потоке
+ * Предназначен для использования в одном потоке.
  */
-class MorphAnalyzer {
-
-  private val stemmer = RussianStemmer()
+@JvmInline
+value class MorphAnalyzer(private val stemmer: RussianStemmer = RussianStemmer()) {
 
   /**
    * Морфологическая основа предложения обогащенная дополнительными стемами.
+   * Максимально расширена всеми вариантами в одну кучу, чтобы было легче проверять [queryBases]
    */
-  fun extendedMorphologicalBasis(sentence: String): Set<String> {
+  fun sentenceBasis(sentence: String): Set<String> {
     return buildSet {
       whileSplit(sentence) {
         add(stem(it))
@@ -24,18 +24,41 @@ class MorphAnalyzer {
   }
 
   /**
-   * Морфологическая основа предложения.
+   * Морфологические основы предложения (может быть много разных вариантов).
+   * Каждый вариант максимально сужен, чтобы было больше шансов на вхождение в [sentenceBasis]
    */
-  fun morphologicalBasis(sentence: String): Set<String> {
-    return buildSet {
-      whileSplit(sentence) {
-        val lemmas = lemmas(it)
-        if (lemmas.isEmpty()) {
-          add(stem(it))
+  fun queryBases(sentence: String): Set<Set<String>> {
+    var results = mutableSetOf<MutableSet<String>>(mutableSetOf())
+    whileSplit(sentence) {
+      val lemmas = lemmas(it)
+      if (lemmas.isEmpty()) {
+        results.add(stem(it))
+      } else {
+        if (lemmas.size == 1) {
+          results.add(lemmas.first())
         } else {
-          addAll(lemmas(it))
+          results = newMultiverse(results, lemmas)
         }
       }
+    }
+    return results
+  }
+
+  private fun newMultiverse(source: Set<Set<String>>, els: Set<String>): MutableSet<MutableSet<String>> {
+    val multiverse = mutableSetOf<MutableSet<String>>()
+    for (origin in source) {
+      for (el in els) {
+        val newVariant = origin.toMutableSet()
+        newVariant.add(el)
+        multiverse.add(newVariant)
+      }
+    }
+    return multiverse
+  }
+
+  private fun MutableSet<MutableSet<String>>.add(el: String) {
+    forEach {
+      it.add(el)
     }
   }
 

@@ -27,6 +27,6 @@ module.exports = {
   },
   entry: "./src/main.js",
   output: {
-    clean: true,
-  }
+    clean: true
+  },
 };

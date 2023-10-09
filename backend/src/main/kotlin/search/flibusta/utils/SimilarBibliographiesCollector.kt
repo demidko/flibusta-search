@@ -1,7 +1,7 @@
 package search.flibusta.utils
 
-import search.flibusta.entities.Bibliography
-import search.flibusta.entities.FlibustaBook
+import search.flibusta.dto.Bibliography
+import search.flibusta.dto.FlibustaBook
 
 class SimilarBibliographiesCollector(requiredAuthor: String, private val maxLevenshteinDistance: Int) {
 

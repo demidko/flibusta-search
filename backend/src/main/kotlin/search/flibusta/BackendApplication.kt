@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit.MINUTES
 
 @EnableScheduling
 @SpringBootApplication
-class App {
+class BackendApplication {
 
   @Value("\${flibusta.mirror:https://flibusta.is}")
   private lateinit var mirror: String
@@ -42,5 +42,5 @@ class App {
 }
 
 fun main(args: Array<String>) {
-  runApplication<App>(*args)
+  runApplication<BackendApplication>(*args)
 }

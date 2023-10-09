@@ -12,12 +12,11 @@ import org.apache.lucene.index.DirectoryReader.open
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.queryparser.classic.QueryParser
-import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.store.ByteBuffersDirectory
 import org.apache.lucene.store.Directory
 import org.slf4j.LoggerFactory.getLogger
-import search.flibusta.entities.Bibliography
+import search.flibusta.dto.Bibliography
 import search.flibusta.utils.SimilarBibliographiesCollector
 import search.flibusta.utils.UrlUtils.urlOf
 import java.util.concurrent.atomic.AtomicReference
@@ -64,24 +63,24 @@ class FlibustaRussianCatalog(mirror: String) {
   }
 
   fun searchAuthors(author: String): List<Bibliography> {
-    val queryParser = QueryParser("author", analyzer)
-    val query = queryParser.parse(author)
+    val parser = QueryParser("author", analyzer)
+    val query = parser.parse(fuzzy(author))
     val directory = index.get()
-    val directoryReader = open(directory)
-    val bibliographiesCollector = SimilarBibliographiesCollector(author, 3)
-    directoryReader.use {
-      val indexSearcher = IndexSearcher(directoryReader)
-      val topDocs = indexSearcher.search(query, MAX_VALUE)
-      val storedFields = indexSearcher.storedFields()
-      for (hit in topDocs.scoreDocs) {
-        val document = storedFields.document(hit.doc)
+    val reader = open(directory)
+    val collector = SimilarBibliographiesCollector(author, 2)
+    reader.use {
+      val searcher = IndexSearcher(reader)
+      val docs = searcher.search(query, MAX_VALUE)
+      val fields = searcher.storedFields()
+      for (hit in docs.scoreDocs) {
+        val document = fields.document(hit.doc)
         val foundAuthor = document.getField("author").stringValue()
         val title = document.getField("book").stringValue()
         val id = document.getField("id").numericValue().toInt()
-        bibliographiesCollector.processBook(foundAuthor, id, title)
+        collector.processBook(foundAuthor, id, title)
       }
     }
-    return bibliographiesCollector.listBibliographies()
+    return collector.listBibliographies()
   }
 
   fun updateCatalog() {
@@ -178,9 +177,16 @@ class FlibustaRussianCatalog(mirror: String) {
     val fullName =
       listOf(firstName, lastName, middleName)
         .filter(String::isNotBlank)
-        .joinToString(" ") {
-          it.replace('-', ' ')
-        }
+        .joinToString(" ", transform = ::normalizeAuthor)
     return TextField("author", fullName, YES)
+  }
+
+  private fun fuzzy(author: String): String {
+    val normalizedAuthor = normalizeAuthor(author)
+    return "$normalizedAuthor~"
+  }
+
+  private fun normalizeAuthor(name: String): String {
+    return name.replace('ё', 'е').replace('-', ' ')
   }
 }

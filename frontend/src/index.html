@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="ui container">
-  <div class="ui center aligned very compact stackable grid">
+  <div class="ui center aligned very compact stackable grid" id="quotes-block">
     <div class="row"></div>
     <div class="row"></div>
     <div class="row"></div>
@@ -23,18 +23,21 @@
     <div class="ui input">
       <input type="text" placeholder="Фраза для поиска..." id="query-input">
     </div>
-    <button class="ui primary icon button" onclick="search()">
+    <button class="ui primary icon button" onclick="searchQuotes()">
       <i class="search icon"></i>
     </button>
     <div class="row"></div>
     <div class="row"></div>
     <div class="row"></div>
-    <div class="row"></div>
-    <div class="row"></div>
-    <div class="row">
-      <div class="column" id="result-grid">
+    <div style="visibility: hidden" class="ui small info icon message" id="progress-block">
+      <i class="notched circle loading icon"></i>
+      <div class="content" id="log-line">
+        Все книги похожих авторов будут проверены, это может занять некоторое время.
       </div>
     </div>
+    <div class="row"></div>
+    <div class="row"></div>
+    <div class="row" id="content-delimiter"></div>
   </div>
 </div>
 </body>
