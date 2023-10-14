@@ -17,7 +17,7 @@ async function searchQuotes() {
       console.warn(json)
       let [author, id, title, quote] = json
       let htmlQuote = `
-        <div class="ui positive floating message">
+        <div class="ui fluid positive floating message">
           <div class="header"><a href="https://flibusta.is/b/${id}">${author} — ${title}</a></div>
           <p>${quote}</p>
         </div>`
@@ -51,7 +51,8 @@ function logLine(line) {
 }
 
 function hideProgressBlock() {
-  document.getElementById("progress-block").style.visibility = "hidden"
+  // document.getElementById("progress-block").style.visibility = "hidden"
+  logLine("Поиск завершен.")
 }
 
 function getAuthor() {
